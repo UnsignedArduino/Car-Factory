@@ -195,48 +195,65 @@ ManualMakeCarStatusBar = statusbars.create(20, 2, StatusBarKind.MakeTime)
 ManualMakeCarStatusBar.max = 100
 ManualMakeCarStatusBar.attachToSprite(ManualMakeCar, 0, 0)
 ManualMakeCarStatusBar.setColor(7, 2, 5)
-let InventoryListingCar = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . 2 2 2 2 2 2 2 2 . . . . 
-    . . . 2 4 2 2 2 2 2 2 c 2 . . . 
-    . . 2 c 4 2 2 2 2 2 2 c c 2 . . 
-    . 2 c c 4 4 4 4 4 4 2 c c 4 2 d 
-    . 2 c 2 e e e e e e e b c 4 2 2 
-    . 2 2 e b b e b b b e e b 4 2 2 
-    . 2 e b b b e b b b b e 2 2 2 2 
-    . e e 2 2 2 e 2 2 2 2 2 e 2 2 2 
-    . e e e e e e f e e e f e 2 d d 
-    . e e e e e e f e e f e e e 2 d 
-    . e e e e e e f f f e e e e e e 
-    . e f f f f e e e e f f f e e e 
-    . . f f f f f e e f f f f f e . 
-    . . . f f f . . . . f f f f . . 
-    . . . . . . . . . . . . . . . . 
+let InventoryListingSprite = sprites.create(img`
+    . 
     `, SpriteKind.Info)
-InventoryListingCar.setPosition(scene.screenWidth() * 0.6 - 1, scene.screenHeight() * 0.94)
-InventoryListingCarStatusBar = statusbars.create(50, 2, StatusBarKind.MakeTime)
+InventoryListingSprite.setPosition(scene.screenWidth() * 0.64 - 1, scene.screenHeight() * 0.88)
+InventoryListingCarStatusBar = statusbars.create(60, 2, StatusBarKind.MakeTime)
 InventoryListingCarStatusBar.max = 20
 InventoryListingCarStatusBar.value = 0
 InventoryListingCarStatusBar.setColor(7, 2, 5)
 InventoryListingCarStatusBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
-InventoryListingCarStatusBar.attachToSprite(InventoryListingCar, 0, 0)
-InventoryListingCarStatusBar.setLabel("Storage", 1)
+InventoryListingCarStatusBar.attachToSprite(InventoryListingSprite, 0, 0)
+InventoryListingCarStatusBar.setLabel("Inventory", 1)
+let AssemblyLineSprite = sprites.create(img`
+    . 
+    `, SpriteKind.Info)
+AssemblyLineSprite.setPosition(scene.screenWidth() * 0.7 - 2, scene.screenHeight() * 0.95)
+let AssemblyLineStatusBar = statusbars.create(60, 2, StatusBarKind.MakeTime)
+AssemblyLineStatusBar.max = 100
+AssemblyLineStatusBar.value = 0
+AssemblyLineStatusBar.setColor(7, 2, 5)
+AssemblyLineStatusBar.attachToSprite(AssemblyLineSprite, 0, 0)
+AssemblyLineStatusBar.setLabel("Status", 1)
 Making = false
 let Overlapping = false
+// 1 Mechanic: $200
+// Assembly line: $3000
+// Robot assistent: $750
+// Robot: $2500
+let AutoMakerNames = [
+"Group of 4 Mechanics",
+"Group of 8 Mechanics",
+"Group of 12 Mechanics",
+"Assembly line + 24 Mechanics",
+"Assembly line + 48 Mechanics",
+"8 robot-assisted assembly line + 16 Mechanics",
+"12 robot-assisted assembly line + 32 Mechanics",
+"32 robot-operated assembly line",
+"64 robot-operated assembly line",
+"128 robot-operated assembly line"
+]
+let AutoMakerBasePrices = [
+800,
+1600,
+2400,
+7800,
+12600,
+12200,
+18400,
+83000,
+163000,
+323000
+]
 if (false) {
     ManualMakeDelay = 200
-} else {
-    ManualMakeDelay = 0
-}
-if (false) {
     BuyChance = 0.1
-} else {
-    BuyChance = 2.5
-}
-if (false) {
     CostPerCar = 300
 } else {
-    CostPerCar = 1000
+    ManualMakeDelay = 0
+    BuyChance = 2
+    CostPerCar = 100000
 }
 info.setScore(0)
 game.onUpdate(function () {
