@@ -77,6 +77,24 @@ function make_status_bar_width_height_max_value_label_sprite (width: number, hei
     TempStatusBar.attachToSprite(sprite_to_attach, 0, 0)
     return TempStatusBar
 }
+function define_upgrades () {
+    UpgradeNames = [
+    "More skills - Decrease manual build time",
+    "More advertising - More people buying cars",
+    "More inventory - More space for more cars",
+    "Decreased startup time - Less time waiting for start",
+    "Decreased stop time - Less time waiting for stop",
+    "Firmware upgrades - Faster robots"
+    ]
+    UpgradePrices = [
+    500,
+    1000,
+    2500,
+    750,
+    500,
+    1000
+    ]
+}
 function make_manual_make_car () {
     ManualMakeCar = make_player_sprite_image_at_x_y(img`
         . . . . . . . . . . . . . . . . 
@@ -107,6 +125,8 @@ function make_player_sprite_image_at_x_y (image2: Image, x: number, y: number) {
     return TempSprite
 }
 let TempSprite: Sprite = null
+let UpgradePrices: number[] = []
+let UpgradeNames: string[] = []
 let TempStatusBar: StatusBarSprite = null
 let AutoMakerPrices: number[] = []
 let AutoMakerNames: string[] = []
