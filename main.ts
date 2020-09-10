@@ -24,14 +24,102 @@ controller.A.onEvent(ControllerButtonEvent.Pressed, function () {
             manually_make_car()
         }
     }
+    if (Cursor.overlapsWith(LeftAutoMakerButton)) {
+        if (AutoMakerIndex > 0) {
+            AutoMakerIndex += -1
+        } else {
+            AutoMakerIndex = AutoMakerNames.length - 1
+        }
+    }
+    if (Cursor.overlapsWith(RightAutoMakerButton)) {
+        if (AutoMakerIndex < AutoMakerNames.length - 1) {
+            AutoMakerIndex += 1
+        } else {
+            AutoMakerIndex = 0
+        }
+    }
 })
+function define_auto_maker_buildings () {
+    // 1 Mechanic: $200
+    // Assembly line: $3000
+    // Robot assistant: $750
+    // Robot: $2500
+    AutoMakerNames = [
+    "Group of 4 Mechanics",
+    "Group of 8 Mechanics",
+    "Group of 12 Mechanics",
+    "Assembly line + 24 Mechanics",
+    "Assembly line + 48 Mechanics",
+    "8 robot-assisted assembly line + 16 Mechanics",
+    "12 robot-assisted assembly line + 32 Mechanics",
+    "32 robot-operated assembly line",
+    "64 robot-operated assembly line",
+    "128 robot-operated assembly line"
+    ]
+    AutoMakerPrices = [
+    800,
+    1600,
+    2400,
+    7800,
+    12600,
+    12200,
+    18400,
+    83000,
+    163000,
+    323000
+    ]
+}
+function make_status_bar_width_height_max_value_label_sprite (width: number, height: number, max: number, value: number, label: string, sprite_to_attach: Sprite) {
+    TempStatusBar = statusbars.create(width, height, StatusBarKind.MakeTime)
+    TempStatusBar.max = max
+    TempStatusBar.value = value
+    TempStatusBar.setLabel(label, 1)
+    TempStatusBar.attachToSprite(sprite_to_attach, 0, 0)
+    return TempStatusBar
+}
+function make_manual_make_car () {
+    ManualMakeCar = make_player_sprite_image_at_x_y(img`
+        . . . . . . . . . . . . . . . . 
+        . . . . 6 6 6 6 6 6 6 6 . . . . 
+        . . . 6 9 6 6 6 6 6 6 c 6 . . . 
+        . . 6 c 9 6 6 6 6 6 6 c c 6 . . 
+        . 6 c c 9 9 9 9 9 9 6 c c 9 6 d 
+        . 6 c 6 8 8 8 8 8 8 8 b c 9 6 6 
+        . 6 6 8 b b 8 b b b 8 8 b 9 6 6 
+        . 6 8 b b b 8 b b b b 8 6 6 6 6 
+        . 8 8 6 6 6 8 6 6 6 6 6 8 6 6 6 
+        . 8 8 8 8 8 8 f 8 8 8 f 8 6 d d 
+        . 8 8 8 8 8 8 f 8 8 f 8 8 8 6 d 
+        . 8 8 8 8 8 8 f f f 8 8 8 8 8 8 
+        . 8 f f f f 8 8 8 8 f f f 8 8 8 
+        . . f f f f f 8 8 f f f f f 8 . 
+        . . . f f f . . . . f f f f . . 
+        . . . . . . . . . . . . . . . . 
+        `, scene.screenWidth() * 0.125 - 1, scene.screenHeight() * 0.5)
+    ManualMakeCarStatusBar = statusbars.create(20, 2, StatusBarKind.MakeTime)
+    ManualMakeCarStatusBar.max = 100
+    ManualMakeCarStatusBar.attachToSprite(ManualMakeCar, 0, 0)
+    ManualMakeCarStatusBar.setColor(7, 2, 5)
+}
+function make_player_sprite_image_at_x_y (image2: Image, x: number, y: number) {
+    TempSprite = sprites.create(image2, SpriteKind.Player)
+    TempSprite.setPosition(x, y)
+    return TempSprite
+}
+let TempSprite: Sprite = null
+let TempStatusBar: StatusBarSprite = null
+let AutoMakerPrices: number[] = []
+let AutoMakerNames: string[] = []
+let ManualMakeCar: Sprite = null
+let ManualMakeCarStatusBar: StatusBarSprite = null
 let CostPerCar = 0
 let BuyChance = 0
 let ManualMakeDelay = 0
+let AutoMakerIndex = 0
 let Making = false
+let RightAutoMakerButton: Sprite = null
+let LeftAutoMakerButton: Sprite = null
 let InventoryListingCarStatusBar: StatusBarSprite = null
-let ManualMakeCarStatusBar: StatusBarSprite = null
-let ManualMakeCar: Sprite = null
 let Cursor: Sprite = null
 Cursor = sprites.create(img`
     f f . . . . 
@@ -50,21 +138,21 @@ Cursor.setFlag(SpriteFlag.ShowPhysics, false)
 controller.moveSprite(Cursor, 96, 96)
 Cursor.z = 100
 scene.setBackgroundImage(img`
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb66666666bbbbbbbbbbbfbbbbccfbbbddbfbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb69666666c6bbbccbbbbbfbbbccbfbbbddbfbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbffffbbbbffbbbbffffffbbbbbbbbffffbbbbffbbbbbbffffbbffffffbbbbffbbbbffffffbbffbbffbbbbbb6c9666666cc6bbbbcbbffbbbbccbfbbbddffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbffffbbbbffbbbbffffffbbbbbbbbffffbbbbffbbbbbbffffbbffffffbbbbffbbbbffffffbbffbbffbbbbb6cc9999996cc96dbbffffbbbbccbbfbbbbdfbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbffbbffbbbbb6c68888888bc966bbffcbbbbccbbbfbbbbfdbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbffbbffbbbbb668bb8bbb88b966bbcbcccbccbbbfffbbbfdbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbffbbbbbbffffffbbffffbbbbbbbbffffffbbffffffbbffbbbbbbbbffbbbbffbbffbbffffbbbbbbffbbbbbbb68bbb8bbbb86666bcbbbcccffbbbfbfbbfbddbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbffbbbbbbffffffbbffffbbbbbbbbffffffbbffffffbbffbbbbbbbbffbbbbffbbffbbffffbbbbbbffbbbbbbb886668666668666bbbbbbbcfffbffbbffbbddbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbbbffbbbbbbb888888f888f86ddbbbaabbbbbbfbbbbbfbbbddbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbbbffbbbbbbb888888f88f8886dbbabbabbbbbbbdddffdddffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbffffbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbbbffffbbbbffbbbbbbffbbbbffbbffbbbbffbbbbbbb888888fff888888bbbbbffddddddddffffddffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbffffbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbbbffffbbbbffbbbbbbffbbbbffbbffbbbbffbbbbbbb8ffff8888fff888bbbbbfffdddddbffbbfbbffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbfffff88fffff8bbbabbabffbbbfffbbbbffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbfffbbbbffffbbbbbaabbbfffffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbddddddddddddddddddddddddddddddddddddddddddddddddddddddddddbbbbbbbbbbbbbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb66666666bbbbbbbbbbbfbbbbccfbbbddbfbbbbbbf2feeeeffbbbbbbbbbbbbbbbbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb69666666c6bbbccbbbbbfbbbccbfbbbddbfbbbbbf222feeeeffbbbbbbbbbbbbbbbbbb
+    bbbbffffbbbbffbbbbffffffbbbbbbbbffffbbbbffbbbbbbffffbbffffffbbbbffbbbbffffffbbffbbffbbbbbb6c9666666cc6bbbbcbbffbbbbccbfbbbddffbbbbbfeeeeffeeefbbbbbbbbbbbbbbbbbb
+    bbbbffffbbbbffbbbbffffffbbbbbbbbffffbbbbffbbbbbbffffbbffffffbbbbffbbbbffffffbbffbbffbbbbb6cc9999996cc96dbbffffbbbbccbbfbbbbdfbbbbbfe2222eeffffbbbbbbbbbbbbbbbbbb
+    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbffbbffbbbbb6c68888888bc966bbffcbbbbccbbbfbbbbfdbbbbbf2effff222efbbbbbbbbbbbbbbbbbb
+    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbffbbffbbbbb668bb8bbb88b966bbcbcccbccbbbfffbbbfdbbbbbfffeeefffffffbbbbbbbbbbfbbbbbb
+    bbffbbbbbbffffffbbffffbbbbbbbbffffffbbffffffbbffbbbbbbbbffbbbbffbbffbbffffbbbbbbffbbbbbbb68bbb8bbbb86666bcbbbcccffbbbfbfbbfbddbbbbfee44fbe44effbbbbbbbbbfffbbbbb
+    bbffbbbbbbffffffbbffffbbbbbbbbffffffbbffffffbbffbbbbbbbbffbbbbffbbffbbffffbbbbbbffbbbbbbb886668666668666bbbbbbbcfffbffbbffbbddbbbbbfeddf14d4eefbbbbdbdbbbfffbbbb
+    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbbbffbbbbbbb888888f888f86ddbbbaabbbbbbfbbbbbfbbbddbbbbbfdddeeeeefbbbbbbdbbbcbffbbbb
+    bbffbbbbbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbffbbbbbbbbffbbbbffbbffbbffbbffbbbbffbbbbbbb888888f88f8886dbbabbabbbbbbbdddffdddffbbbbbfe4edd4fbbbbbbbccdcccccbbbbb
+    bbbbffffbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbbbffffbbbbffbbbbbbffbbbbffbbffbbbbffbbbbbbb888888fff888888bbbbbffddddddddffffddffbbbbbf22eddefbbbbbbbcbdbcbbcbbbbb
+    bbbbffffbbffbbffbbffbbffbbbbbbffbbbbbbffbbffbbbbffffbbbbffbbbbbbffbbbbffbbffbbbbffbbbbbbb8ffff8888fff888bbbbbfffdddddbffbbfbbffbbbbff55feefffbbbbbccccccccccbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbfffff88fffff8bbbabbabffbbbfffbbbbffbbbbbbffffffffffbbbbbccccccccccbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbfffbbbbffffbbbbbaabbbfffffbbbbbbbbbbbbbbbfffbbbffbbbbbbccccccccccbbbb
+    bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbddddddddddddddddddddddddddddddddddddddddddddddddddddddddddbbccccccccccbbbb
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
@@ -172,80 +260,67 @@ scene.setBackgroundImage(img`
     d5555dddddddd55555ddddddd55555ddddddd55fffbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
     `)
 scene.setBackgroundColor(12)
-ManualMakeCar = sprites.create(img`
-    . . . . . . . . . . . . . . . . 
-    . . . . 6 6 6 6 6 6 6 6 . . . . 
-    . . . 6 9 6 6 6 6 6 6 c 6 . . . 
-    . . 6 c 9 6 6 6 6 6 6 c c 6 . . 
-    . 6 c c 9 9 9 9 9 9 6 c c 9 6 d 
-    . 6 c 6 8 8 8 8 8 8 8 b c 9 6 6 
-    . 6 6 8 b b 8 b b b 8 8 b 9 6 6 
-    . 6 8 b b b 8 b b b b 8 6 6 6 6 
-    . 8 8 6 6 6 8 6 6 6 6 6 8 6 6 6 
-    . 8 8 8 8 8 8 f 8 8 8 f 8 6 d d 
-    . 8 8 8 8 8 8 f 8 8 f 8 8 8 6 d 
-    . 8 8 8 8 8 8 f f f 8 8 8 8 8 8 
-    . 8 f f f f 8 8 8 8 f f f 8 8 8 
-    . . f f f f f 8 8 f f f f f 8 . 
-    . . . f f f . . . . f f f f . . 
-    . . . . . . . . . . . . . . . . 
-    `, SpriteKind.Player)
-ManualMakeCar.setPosition(scene.screenWidth() * 0.125 - 1, scene.screenHeight() * 0.5)
-ManualMakeCarStatusBar = statusbars.create(20, 2, StatusBarKind.MakeTime)
-ManualMakeCarStatusBar.max = 100
-ManualMakeCarStatusBar.attachToSprite(ManualMakeCar, 0, 0)
-ManualMakeCarStatusBar.setColor(7, 2, 5)
+make_manual_make_car()
 let InventoryListingSprite = sprites.create(img`
     . 
     `, SpriteKind.Info)
 InventoryListingSprite.setPosition(scene.screenWidth() * 0.64 - 1, scene.screenHeight() * 0.88)
-InventoryListingCarStatusBar = statusbars.create(60, 2, StatusBarKind.MakeTime)
-InventoryListingCarStatusBar.max = 20
-InventoryListingCarStatusBar.value = 0
+InventoryListingCarStatusBar = make_status_bar_width_height_max_value_label_sprite(60, 2, 20, 0, "Inventory", InventoryListingSprite)
 InventoryListingCarStatusBar.setColor(7, 2, 5)
 InventoryListingCarStatusBar.setStatusBarFlag(StatusBarFlag.SmoothTransition, true)
-InventoryListingCarStatusBar.attachToSprite(InventoryListingSprite, 0, 0)
-InventoryListingCarStatusBar.setLabel("Inventory", 1)
 let AssemblyLineSprite = sprites.create(img`
     . 
     `, SpriteKind.Info)
 AssemblyLineSprite.setPosition(scene.screenWidth() * 0.7 - 2, scene.screenHeight() * 0.95)
-let AssemblyLineStatusBar = statusbars.create(60, 2, StatusBarKind.MakeTime)
-AssemblyLineStatusBar.max = 100
-AssemblyLineStatusBar.value = 0
+let AssemblyLineStatusBar = make_status_bar_width_height_max_value_label_sprite(60, 2, 100, 0, "Status", AssemblyLineSprite)
 AssemblyLineStatusBar.setColor(7, 2, 5)
-AssemblyLineStatusBar.attachToSprite(AssemblyLineSprite, 0, 0)
-AssemblyLineStatusBar.setLabel("Status", 1)
+LeftAutoMakerButton = make_player_sprite_image_at_x_y(img`
+    b b b b b b b b b b b b b b b b 
+    b d d d d d d d d d d d d d d b 
+    b d d d d b d d d d d d d d d b 
+    b d d d b b d d d d d d d d d b 
+    b d d b b b d d d d d d d d d b 
+    b d b b b b b b b b b b b b d b 
+    b d b b b b b b b b b b b b d b 
+    b d d b b b d d d d d d d d d b 
+    b d d d b b d d d d d d d d d b 
+    b d d d d b d d d d d d d d d b 
+    b d d d d d d d d d d d d d d b 
+    b b b b b b b b b b b b b b b b 
+    `, scene.screenWidth() * 0.5 - 3, scene.screenHeight() * 0.35)
+let AutoMakerBuyButton = make_player_sprite_image_at_x_y(img`
+    b b b b b b b b b b b b b b b b 
+    b d d d d d d d d d d d d d d b 
+    b d d d d d d d d d d d d d d b 
+    b d b b d d d d d d d d d d d b 
+    b d b d b d d d d d d d d d d b 
+    b d b b d d b d b d d b d b d b 
+    b d b d b d b d b d d b d b d b 
+    b d b b d d d b d d d d b b d b 
+    b d d d d d d d d d b d d b d b 
+    b d d d d d d d d d d b b b d b 
+    b d d d d d d d d d d d d d d b 
+    b b b b b b b b b b b b b b b b 
+    `, scene.screenWidth() * 0.65 - 3, scene.screenHeight() * 0.35)
+RightAutoMakerButton = make_player_sprite_image_at_x_y(img`
+    b b b b b b b b b b b b b b b b 
+    b d d d d d d d d d d d d d d b 
+    b d d d d d d d d d b d d d d b 
+    b d d d d d d d d d b b d d d b 
+    b d d d d d d d d d b b b d d b 
+    b d b b b b b b b b b b b b d b 
+    b d b b b b b b b b b b b b d b 
+    b d d d d d d d d d b b b d d b 
+    b d d d d d d d d d b b d d d b 
+    b d d d d d d d d d b d d d d b 
+    b d d d d d d d d d d d d d d b 
+    b b b b b b b b b b b b b b b b 
+    `, scene.screenWidth() * 0.8 - 3, scene.screenHeight() * 0.35)
 Making = false
 let Overlapping = false
-// 1 Mechanic: $200
-// Assembly line: $3000
-// Robot assistent: $750
-// Robot: $2500
-let AutoMakerNames = [
-"Group of 4 Mechanics",
-"Group of 8 Mechanics",
-"Group of 12 Mechanics",
-"Assembly line + 24 Mechanics",
-"Assembly line + 48 Mechanics",
-"8 robot-assisted assembly line + 16 Mechanics",
-"12 robot-assisted assembly line + 32 Mechanics",
-"32 robot-operated assembly line",
-"64 robot-operated assembly line",
-"128 robot-operated assembly line"
-]
-let AutoMakerBasePrices = [
-800,
-1600,
-2400,
-7800,
-12600,
-12200,
-18400,
-83000,
-163000,
-323000
-]
+AutoMakerIndex = 0
+let LastAutoMakerIndex = -1
+define_auto_maker_buildings()
 if (false) {
     ManualMakeDelay = 200
     BuyChance = 0.1
@@ -297,5 +372,104 @@ game.onUpdate(function () {
             . . . . . . . f 1 f 
             . . . . . . . . f . 
             `)
+    }
+    if (Cursor.overlapsWith(LeftAutoMakerButton)) {
+        LeftAutoMakerButton.setImage(img`
+            a a a a a a a a a a a a a a a a 
+            a b b b b b b b b b b b b b b a 
+            a b b b b a b b b b b b b b b a 
+            a b b b a a b b b b b b b b b a 
+            a b b a a a b b b b b b b b b a 
+            a b a a a a a a a a a a a a b a 
+            a b a a a a a a a a a a a a b a 
+            a b b a a a b b b b b b b b b a 
+            a b b b a a b b b b b b b b b a 
+            a b b b b a b b b b b b b b b a 
+            a b b b b b b b b b b b b b b a 
+            a a a a a a a a a a a a a a a a 
+            `)
+    } else {
+        LeftAutoMakerButton.setImage(img`
+            b b b b b b b b b b b b b b b b 
+            b d d d d d d d d d d d d d d b 
+            b d d d d b d d d d d d d d d b 
+            b d d d b b d d d d d d d d d b 
+            b d d b b b d d d d d d d d d b 
+            b d b b b b b b b b b b b b d b 
+            b d b b b b b b b b b b b b d b 
+            b d d b b b d d d d d d d d d b 
+            b d d d b b d d d d d d d d d b 
+            b d d d d b d d d d d d d d d b 
+            b d d d d d d d d d d d d d d b 
+            b b b b b b b b b b b b b b b b 
+            `)
+    }
+    if (Cursor.overlapsWith(AutoMakerBuyButton)) {
+        AutoMakerBuyButton.setImage(img`
+            a a a a a a a a a a a a a a a a 
+            a b b b b b b b b b b b b b b a 
+            a b b b b b b b b b b b b b b a 
+            a b a a b b b b b b b b b b b a 
+            a b a b a b b b b b b b b b b a 
+            a b a a b b a b a b b a b a b a 
+            a b a b a b a b a b b a b a b a 
+            a b a a b b b a b b b b a a b a 
+            a b b b b b b b b b a b b a b a 
+            a b b b b b b b b b b a a a b a 
+            a b b b b b b b b b b b b b b a 
+            a a a a a a a a a a a a a a a a 
+            `)
+    } else {
+        AutoMakerBuyButton.setImage(img`
+            b b b b b b b b b b b b b b b b 
+            b d d d d d d d d d d d d d d b 
+            b d d d d d d d d d d d d d d b 
+            b d b b d d d d d d d d d d d b 
+            b d b d b d d d d d d d d d d b 
+            b d b b d d b d b d d b d b d b 
+            b d b d b d b d b d d b d b d b 
+            b d b b d d d b d d d d b b d b 
+            b d d d d d d d d d b d d b d b 
+            b d d d d d d d d d d b b b d b 
+            b d d d d d d d d d d d d d d b 
+            b b b b b b b b b b b b b b b b 
+            `)
+    }
+    if (Cursor.overlapsWith(RightAutoMakerButton)) {
+        RightAutoMakerButton.setImage(img`
+            a a a a a a a a a a a a a a a a 
+            a b b b b b b b b b b b b b b a 
+            a b b b b b b b b b a b b b b a 
+            a b b b b b b b b b a a b b b a 
+            a b b b b b b b b b a a a b b a 
+            a b a a a a a a a a a a a a b a 
+            a b a a a a a a a a a a a a b a 
+            a b b b b b b b b b a a a b b a 
+            a b b b b b b b b b a a b b b a 
+            a b b b b b b b b b a b b b b a 
+            a b b b b b b b b b b b b b b a 
+            a a a a a a a a a a a a a a a a 
+            `)
+    } else {
+        RightAutoMakerButton.setImage(img`
+            b b b b b b b b b b b b b b b b 
+            b d d d d d d d d d d d d d d b 
+            b d d d d d d d d d b d d d d b 
+            b d d d d d d d d d b b d d d b 
+            b d d d d d d d d d b b b d d b 
+            b d b b b b b b b b b b b b d b 
+            b d b b b b b b b b b b b b d b 
+            b d d d d d d d d d b b b d d b 
+            b d d d d d d d d d b b d d d b 
+            b d d d d d d d d d b d d d d b 
+            b d d d d d d d d d d d d d d b 
+            b b b b b b b b b b b b b b b b 
+            `)
+    }
+})
+game.onUpdate(function () {
+    if (!(AutoMakerIndex == LastAutoMakerIndex)) {
+        AutoMakerBuyButton.say("" + AutoMakerNames[AutoMakerIndex] + " for $" + AutoMakerPrices[AutoMakerIndex])
+        LastAutoMakerIndex = AutoMakerIndex
     }
 })
